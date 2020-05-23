@@ -13,32 +13,34 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.core.task.SimpleAsyncTaskExecutor;
 import org.springframework.core.task.TaskExecutor;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.scheduling.annotation.EnableScheduling;
 
 @SpringBootApplication
+@EnableScheduling
 public class FileForwarderApplication {
 	private static ApplicationContext applicationContext;
 
 //	@Autowired
 //	private DirectoryListener directoryListener;
 
-	@Autowired
-	private  AmazonClient amazonClient;
+//	@Autowired
+//	private  AmazonClient amazonClient;
 
-	@Bean
-	public TaskExecutor taskExecutor() {
-
-		return new SimpleAsyncTaskExecutor();
-	}
-
-	@Bean
-	public ApplicationRunner scheduleApplication(TaskExecutor executor) {
-		return new ApplicationRunner() {
-			@Override
-			public void run(ApplicationArguments args) throws Exception {
-				executor.execute(new DirectoryListener(amazonClient));
-			}
-		};
-	}
+//	@Bean
+//	public TaskExecutor taskExecutor() {
+//
+//		return new SimpleAsyncTaskExecutor();
+//	}
+//
+//	@Bean
+//	public ApplicationRunner scheduleApplication(TaskExecutor executor) {
+//		return new ApplicationRunner() {
+//			@Override
+//			public void run(ApplicationArguments args) throws Exception {
+//				executor.execute(new DirectoryListener(amazonClient));
+//			}
+//		};
+//	}
 
 //	@Bean
 //	public CommandLineRunner schedulingRunner(TaskExecutor executor) {

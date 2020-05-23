@@ -3,8 +3,11 @@ package com.sample.listener;
 import com.sample.service.AmazonClient;
 import com.sample.util.PropertyReader;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
+import java.io.IOException;
 import java.nio.file.FileSystems;
 import java.nio.file.Path;
 import java.nio.file.StandardWatchEventKinds;
@@ -13,60 +16,48 @@ import java.nio.file.WatchEvent.Kind;
 import java.nio.file.WatchKey;
 import java.nio.file.WatchService;
 
-//@Component
-public class DirectoryListener implements Runnable {
-    private String directory;
-
+@Component
+public class DirectoryListener {
     @Autowired
     AmazonClient amazonClient;
 
-    public DirectoryListener(AmazonClient amazonClient) {
-        this.amazonClient = amazonClient;
-    }
+    @Value("${INCOMING_DIR}")
+    private String directory;
 
-    public String getDirectory() {
-
-        return directory;
-    }
-
-    public void setDirectory(String directory) {
-
-        this.directory = directory;
-    }
-
-    public void run() {
+    @Scheduled(fixedRate = 5000)
+    public void listen() {
         try {
-            this.directory = PropertyReader.getInstance().getProperty("INCOMING_DIR");
             Path directoryPath = FileSystems.getDefault().getPath(directory);
             WatchService watchService = directoryPath.getFileSystem().newWatchService();
             directoryPath.register(watchService, StandardWatchEventKinds.ENTRY_CREATE,
                     StandardWatchEventKinds.ENTRY_MODIFY, StandardWatchEventKinds.ENTRY_DELETE);
 
             //Start infinite loop to watch changes on the directory
-            while (true) {
+//            while (true) {
 
-                WatchKey watchKey = watchService.take();
+            WatchKey watchKey = watchService.take();
 
-                // poll for file system events on the WatchKey
-                for (final WatchEvent<?> event : watchKey.pollEvents()) {
-                    //Calling method
-                    takeActionOnChangeEvent(event);
-                }
-
-                //Break out of the loop if watch directory got deleted
-                if (!watchKey.reset()) {
-                    watchKey.cancel();
-                    watchService.close();
-                    System.out.println("Watch directory got deleted. Stop watching it.");
-                    //Break out from the loop
-                    break;
-                }
+            // poll for file system events on the WatchKey
+            for (final WatchEvent<?> event : watchKey.pollEvents()) {
+                //Calling method
+                takeActionOnChangeEvent(event);
             }
 
-        } catch (InterruptedException interruptedException) {
+            //Break out of the loop if watch directory got deleted
+            if (!watchKey.reset()) {
+                watchKey.cancel();
+                watchService.close();
+                System.out.println("Watch directory got deleted. Stop watching it.");
+                //Break out from the loop
+//                    break;
+            }
+
+        }
+        catch (InterruptedException interruptedException) {
             System.out.println("Thread got interrupted:" + interruptedException);
             return;
-        } catch (Exception exception) {
+        }
+        catch (Exception exception) {
             exception.printStackTrace();
             return;
         }
