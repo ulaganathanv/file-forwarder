@@ -68,7 +68,11 @@ public class DirectoryListener {
         if (kind.equals(StandardWatchEventKinds.ENTRY_CREATE)) {
             Path entryCreated = (Path) event.context();
             System.out.println("New entry created:" + entryCreated);
-            amazonClient.listBuckets();
+            System.out.println("Uploading the file to S3 ...");
+            String fileObjKeyName = entryCreated.toString();
+            String filePath = directory + "/" + entryCreated.toString();
+            amazonClient.uploadObject("incoming-files-directory", fileObjKeyName, filePath);
+            System.out.println("File upload is completed");
         } else if (kind.equals(StandardWatchEventKinds.ENTRY_DELETE)) {
             Path entryDeleted = (Path) event.context();
             System.out.println("Exissting entry deleted:" + entryDeleted);
